@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { PageHeader } from "@/components/ui/page-header";
@@ -49,7 +49,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { poppins_400, poppins_500, poppins_600 } from "@/lib/config/font.config";
+import { poppins_400, poppins_500 } from "@/lib/config/font.config";
 import { format } from "date-fns";
 
 // Action categories
@@ -129,6 +129,14 @@ const getTargetLink = (target) => {
   };
   return links[target.type] || "#";
 };
+
+function formatDateRange(range) {
+  if (!range?.from) return "Select date range";
+  if (range.to) {
+    return `${format(range.from, "LLL dd")} - ${format(range.to, "LLL dd")}`;
+  }
+  return format(range.from, "LLL dd, y");
+}
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState([]);
@@ -225,7 +233,7 @@ export default function AuditLogsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             {/* Actor Filter */}
             <div className="space-y-2">
-              <label className={cn(poppins_500.className, "text-sm")}>Admin Actor</label>
+              <span className={cn(poppins_500.className, "text-sm block")}>Admin Actor</span>
               <Select value={actorFilter} onValueChange={setActorFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select actor" />
@@ -243,7 +251,7 @@ export default function AuditLogsPage() {
 
             {/* Category Filter */}
             <div className="space-y-2">
-              <label className={cn(poppins_500.className, "text-sm")}>Action Category</label>
+              <span className={cn(poppins_500.className, "text-sm block")}>Action Category</span>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -264,22 +272,12 @@ export default function AuditLogsPage() {
 
             {/* Date Range */}
             <div className="space-y-2">
-              <label className={cn(poppins_500.className, "text-sm")}>Date Range</label>
+              <span className={cn(poppins_500.className, "text-sm block")}>Date Range</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      "Select date range"
-                    )}
+                    {formatDateRange(dateRange)}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -315,7 +313,7 @@ export default function AuditLogsPage() {
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border">
-            <Table aria-label="Audit log events">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[180px]">Timestamp</TableHead>
@@ -326,12 +324,11 @@ export default function AuditLogsPage() {
                   <TableHead className="w-[120px]">IP Address</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody aria-live="polite">
+              <TableBody>
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={6} className="py-8 text-center">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto" aria-hidden="true" />
-                      <span className="sr-only">Loading audit logs</span>
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
                 ) : logs.length === 0 ? (
@@ -366,10 +363,10 @@ export default function AuditLogsPage() {
                         <TableCell>
                           <Link
                             href={getTargetLink(log.target)}
-                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
+                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                           >
                             {log.target.name}
-                            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                            <ExternalLink className="h-3 w-3" />
                           </Link>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
@@ -398,7 +395,6 @@ export default function AuditLogsPage() {
                   size="sm"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || loading}
-                  aria-label="Go to previous page"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -408,7 +404,6 @@ export default function AuditLogsPage() {
                   size="sm"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || loading}
-                  aria-label="Go to next page"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />

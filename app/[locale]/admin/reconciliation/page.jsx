@@ -34,7 +34,6 @@ import {
   XCircle,
   AlertTriangle,
   ExternalLink,
-  RefreshCw,
   Download,
   Loader2,
   Info,
@@ -127,6 +126,14 @@ const getStellarExplorerUrl = (txHash) => {
   return `https://stellar.expert/explorer/public/tx/${txHash}`;
 };
 
+function formatDateRange(range) {
+  if (!range?.from) return "Select date range";
+  if (range.to) {
+    return `${format(range.from, "LLL dd, y")} - ${format(range.to, "LLL dd, y")}`;
+  }
+  return format(range.from, "LLL dd, y");
+}
+
 export default function PayoutReconciliationPage() {
   const [dateRange, setDateRange] = useState({
     from: subDays(new Date(), 30),
@@ -188,7 +195,7 @@ export default function PayoutReconciliationPage() {
     const csvContent = [
       headers.join(","),
       ...rows.map((row) =>
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")
       ),
     ].join("\n");
 
@@ -208,9 +215,9 @@ export default function PayoutReconciliationPage() {
       />
 
       {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-50" role="note">
+      <Card className="border-blue-200 bg-blue-50">
         <CardContent className="flex items-center gap-3 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100" aria-hidden="true">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
             <Info className="h-5 w-5 text-blue-600" />
           </div>
           <div className="flex-1">
@@ -236,22 +243,12 @@ export default function PayoutReconciliationPage() {
         <CardContent>
           <div className="flex flex-wrap gap-4 items-end">
             <div className="space-y-2">
-              <label className={cn(poppins_500.className, "text-sm")}>Date Range</label>
+              <span className={cn(poppins_500.className, "text-sm block")}>Date Range</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-[280px] justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      "Select date range"
-                    )}
+                    {formatDateRange(dateRange)}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -269,7 +266,6 @@ export default function PayoutReconciliationPage() {
             <Button
               onClick={handleSearch}
               disabled={!dateRange.from || !dateRange.to || loading}
-              aria-label="Run reconciliation search"
             >
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -293,7 +289,7 @@ export default function PayoutReconciliationPage() {
       {hasSearched && (
         <>
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-live="polite">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardContent className="p-4">
                 <p className={cn(poppins_400.className, "text-xs text-muted-foreground")}>
@@ -336,7 +332,7 @@ export default function PayoutReconciliationPage() {
 
           {/* Discrepancy Alert */}
           {discrepancyCount > 0 && (
-            <Card className="border-red-200 bg-red-50" role="alert" aria-live="polite">
+            <Card className="border-red-200 bg-red-50">
               <CardContent className="flex items-center gap-3 py-4">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
                 <div>
@@ -370,7 +366,7 @@ export default function PayoutReconciliationPage() {
                 </div>
               ) : (
                 <div className="rounded-lg border overflow-x-auto">
-                  <Table aria-label="Reconciliation transaction records">
+                  <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Platform ID</TableHead>
@@ -444,9 +440,9 @@ export default function PayoutReconciliationPage() {
                                   className="h-7 text-xs"
                                   asChild
                                 >
-                                  <a href={`/admin/transactions/${tx.id}`} aria-label={`View platform transaction ${tx.platformId}`}>
+                                  <a href={`/admin/transactions/${tx.id}`}>
                                     Platform
-                                    <ArrowUpRight className="ml-1 h-3 w-3" aria-hidden="true" />
+                                    <ArrowUpRight className="ml-1 h-3 w-3" />
                                   </a>
                                 </Button>
                                 {tx.txHash && (
@@ -460,10 +456,9 @@ export default function PayoutReconciliationPage() {
                                       href={getStellarExplorerUrl(tx.txHash)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      aria-label={`View on Stellar explorer for transaction ${tx.platformId}`}
                                     >
                                       Stellar
-                                      <ExternalLink className="ml-1 h-3 w-3" aria-hidden="true" />
+                                      <ExternalLink className="ml-1 h-3 w-3" />
                                     </a>
                                   </Button>
                                 )}
